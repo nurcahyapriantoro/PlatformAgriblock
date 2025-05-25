@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ProtectedRoute } from '@/components/auth/protected-route';
@@ -57,10 +57,52 @@ export default function NewProductPage() {
   const { data: session, update: updateSession } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [attributeFields, setAttributeFields] = useState<{ key: string; value: string }[]>([]);  // Only allow certain roles to create products
-  const allowedRoles = [UserRole.FARMER, UserRole.COLLECTOR, UserRole.TRADER, UserRole.RETAILER, UserRole.ADMIN];
-  const userRole = session?.user?.role as UserRole | undefined;
+  const [attributeFields, setAttributeFields] = useState<{ key: string; value: string }[]>([]);
+  
+  // Only allow certain roles to create products
+  // We only include FARMER as per the requirement "just farmer only create products"
+  const allowedRoles = [UserRole.FARMER];
+  
+  // Store wallet authentication state
+  const [walletAuth, setWalletAuth] = useState<{
+    token: string | null;
+    userData: any;
+    isAuthenticated: boolean;
+  }>({
+    token: null,
+    userData: null,
+    isAuthenticated: false
+  });
+  
+  // Check for wallet authentication
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Check for wallet authentication
+      const walletToken = localStorage.getItem('walletAuthToken') || localStorage.getItem('web3AuthToken');
+      const walletUserDataString = localStorage.getItem('walletUserData');
+      
+      if (walletToken && walletUserDataString) {
+        try {
+          const userData = JSON.parse(walletUserDataString);
+          setWalletAuth({
+            token: walletToken,
+            userData: userData,
+            isAuthenticated: true
+          });
+          console.log('NewProductPage: Wallet auth detected', userData);
+        } catch (error) {
+          console.error('NewProductPage: Error parsing wallet user data:', error);
+        }
+      }
+    }
+  }, []);
+  
+  // Get user role from either session or wallet auth
+  const userRole = session?.user?.role as UserRole || walletAuth.userData?.role as UserRole;
+  
+  // Check if user can create products
   const canCreateProduct = userRole ? allowedRoles.includes(userRole) : false;
+  
   const {
     register,
     handleSubmit,
@@ -97,13 +139,16 @@ export default function NewProductPage() {
     updatedFields[index][field] = value;
     setAttributeFields(updatedFields);
   };
+  
   const onSubmit = async (data: ProductFormData) => {
     try {
       setIsLoading(true);
       setError(null);
 
-      // Check if user is authenticated and has the correct role
-      if (!session?.user?.id) {
+      // Check if user is authenticated through any method
+      const userId = session?.user?.id || walletAuth.userData?.id;
+      
+      if (!userId) {
         console.error('User not authenticated for product creation.');
         setError('Please log in again to create products.');
         setTimeout(() => router.push('/login'), 1500);
@@ -112,14 +157,16 @@ export default function NewProductPage() {
 
       if (!canCreateProduct) {
         console.error('User does not have permission to create products:', {
-          userRole: session?.user?.role
+          userRole: userRole
         });
         setError('You do not have permission to create products. Please check your account role.');
         return;
       }
 
-      // Check for token
-      if (!session?.user?.accessToken) {
+      // Check for token from either authentication method
+      const token = session?.user?.accessToken || walletAuth.token;
+      
+      if (!token) {
         console.warn('No access token available, attempting to refresh session');
         // Try to update the session before proceeding
         try {
@@ -150,31 +197,45 @@ export default function NewProductPage() {
         expiryDate: data.expiryDate ? new Date(data.expiryDate).getTime() : undefined,
         // Set status to CREATED for new products
         status: "CREATED",
-        // Add farmerId field to match the backend's expected parameter name
-        farmerId: session?.user?.id
+        // Add ownerId to match backend's expected field
+        ownerId: userId
       };
 
       console.log('Creating product with data:', productData);
 
-      const response = await productAPI.createProduct(productData);
-
-      if (response.data && response.data.success) {
-        // Check how product ID is returned in the response
-        const productId = response.data.data.id || 
-                         response.data.data.productId || 
-                         (response.data.data.product && response.data.data.product.id);
+      const response = await productAPI.createProduct(productData) as any;
+      
+      // Debug the response structure
+      console.log('Backend response:', response);
+      
+      // Check if the response indicates success (either via data.success or direct success property)
+      if ((response.data && response.data.success) || response.success) {
+        // Backend returns productId in the data.data.productId format from controller
+        const productId = response.data?.data?.productId || 
+                         response.data?.productId ||
+                         response.productId || 
+                         (response.data?.data?.product && response.data.data.product.id) ||
+                         (response.data?.data?.id);
                          
         if (productId) {
           console.log(`Product created successfully with ID: ${productId}`);
           // Navigate to the product details page
           router.push(`/products/${productId}`);
         } else {
-          console.warn('Product created but ID not found in response:', response.data);
-          // Just go to products list page if no ID available
-          router.push('/products');
+          console.warn('Product created but ID not found in response:', response);
+          // Product was created but we don't have the ID
+          // Go to products list instead
+          router.push('/my-products');
         }
       } else {
-        setError(response.data?.message || 'Failed to create product. Please try again.');
+        // Extract error message from different possible response formats
+        const errorMessage = 
+          response.data?.message || 
+          response.message || 
+          'Failed to create product. Please try again.';
+          
+        console.error('Error creating product:', errorMessage);
+        setError(errorMessage);
       }
     } catch (error: any) {
       console.error('Error creating product:', error);
@@ -223,7 +284,7 @@ export default function NewProductPage() {
                 <div className="bg-yellow-900/30 border-l-4 border-yellow-400 p-4 mb-6 rounded-xl">
                   <div className="flex items-center gap-3">
                     <span className="text-yellow-400">⚠️</span>
-                    <span className="text-yellow-200 font-space">You do not have permission to create products. Only farmers, collectors, traders, retailers, and admins can create products.</span>
+                    <span className="text-yellow-200 font-space">You do not have permission to create products. Only farmers can create products.</span>
                   </div>
                 </div>
               ) : (

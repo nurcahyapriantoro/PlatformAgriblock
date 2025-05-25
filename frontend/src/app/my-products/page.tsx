@@ -242,13 +242,23 @@ export default function MyProductsPage() {
       <Web3Background />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16">
-        <header className="mb-10">
-          <h1 className="text-4xl font-bold font-orbitron bg-gradient-to-r from-[#a259ff] via-[#00ffcc] to-[#00bfff] bg-clip-text text-transparent drop-shadow-[0_0_20px_#00ffcc] animate-glow">
-            My Products
-          </h1>
-          <p className="text-gray-300 mt-2 font-space">
-            Manage and transfer your products in the supply chain
-          </p>
+        <header className="mb-10 flex justify-between items-center">
+          <div>
+            <h1 className="text-4xl font-bold font-orbitron bg-gradient-to-r from-[#a259ff] via-[#00ffcc] to-[#00bfff] bg-clip-text text-transparent drop-shadow-[0_0_20px_#00ffcc] animate-glow">
+              My Products
+            </h1>
+            <p className="text-gray-300 mt-2 font-space">
+              Manage and transfer your products in the supply chain
+            </p>
+          </div>
+          
+          {isAuthenticated && userRole === UserRole.FARMER && (
+            <Link href="/products/new">
+              <Button className="bg-gradient-to-r from-[#a259ff] to-[#00ffcc] hover:opacity-90 text-black font-bold">
+                Add Product
+              </Button>
+            </Link>
+          )}
         </header>
 
         {error && (

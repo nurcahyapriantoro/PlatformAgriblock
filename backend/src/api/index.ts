@@ -31,7 +31,7 @@ import ProductSearchRoute from "./routes/ProductSearchRoute"
 import SynchronizationRoute from "./routes/SynchronizationRoute"
 import CustomRoute from "./routes/CustomRoute"
 import FormAuthRoute from "./routes/Auth/FormAuthRoute"
-import GoogleAuthRoute from "./routes/Auth/GoogleAuthRoute"
+// import GoogleAuthRoute from "./routes/Auth/GoogleAuthRoute"
 import Web3AuthRoute from "./routes/Auth/Web3AuthRoute"
 
 // Import ProductSynchronizationService for auto-sync feature
@@ -177,7 +177,7 @@ const api = (
   });
 
   app.use("/api/auth/form", FormAuthRoute)
-  app.use("/api/auth/google", GoogleAuthRoute)
+  // app.use("/api/auth/google", GoogleAuthRoute)
   app.use("/api/auth/web3", Web3AuthRoute)
   app.use("/api/blockchain", BlockchainRoute)
   app.use("/api/user", UserRoute)

@@ -10,8 +10,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as userAPI from '@/lib/api/users';
 import * as authAPI from '@/lib/api/auth';
 import { User, UserRole } from '@/types/user';
-import { PasswordModal } from '@/components/ui/password-modal';
-import { PrivateKeyModal } from '@/components/ui/private-key-modal';
 import { RoleSelectionModal } from '@/components/ui/role-selection-modal';
 import { Copy, ChevronDown, ChevronUp } from 'lucide-react';
 import clsx from 'clsx';
@@ -93,15 +91,10 @@ export default function ProfilePage() {
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
   const [userData, setUserData] = useState<User | null>(null);
   
-  // New state for private key functionality
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-  const [isPrivateKeyModalOpen, setIsPrivateKeyModalOpen] = useState(false);
-  const [privateKey, setPrivateKey] = useState('');
-  
-  // New state for role selection
+  // Role selection state
   const [isRoleSelectionOpen, setIsRoleSelectionOpen] = useState(false);
   
-  // New state for profile toggles
+  // Profile toggles state
   const [showProfileUpdate, setShowProfileUpdate] = useState(false);
   const [showPasswordUpdate, setShowPasswordUpdate] = useState(false);
 
@@ -308,21 +301,6 @@ export default function ProfilePage() {
     }
   };
   
-  const handleGetPrivateKey = async (password: string): Promise<void> => {
-    try {
-      const response = await authAPI.getPrivateKey(password);
-      
-      if (response.success && response.data) {
-        setPrivateKey(response.data.privateKey);
-        setIsPasswordModalOpen(false);
-        setIsPrivateKeyModalOpen(true);
-        return;
-      }
-    } catch (error) {
-      console.error('Error retrieving private key:', error);
-    }
-  };
-  
   const handleCopyWalletAddress = () => {
     if (userData?.walletAddress) {
       try {
@@ -469,19 +447,6 @@ export default function ProfilePage() {
                     </div>
                   )}
                 </dl>
-                <div className="mt-4 flex flex-col sm:flex-row gap-2">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setIsPasswordModalOpen(true)}
-                    className="w-full sm:w-auto border-[#00ffcc] text-[#00ffcc] hover:bg-[#00ffcc22] hover:text-white font-orbitron transition-all duration-300 shadow-[0_0_10px_#00ffcc55]"
-                  >
-                    Private Key
-                  </Button>
-                  <span className="text-xs text-[#a259ff] font-mono flex items-center gap-1 animate-fadeIn">
-                    <span className="inline-block h-2 w-2 rounded-full bg-[#a259ff] animate-pulse" />
-                    You will need to enter your password to access your private key
-                  </span>
-                </div>
               </div>
 
               {/* Profile Info Card */}
@@ -679,20 +644,6 @@ export default function ProfilePage() {
           </div>
         </main>
       </div>
-      {/* Password Modal for Private Key Retrieval */}
-      <PasswordModal
-        isOpen={isPasswordModalOpen}
-        onClose={() => setIsPasswordModalOpen(false)}
-        onSubmit={handleGetPrivateKey}
-        title="Enter Password to View Private Key"
-        description="Your password is required to decrypt your blockchain private key."
-      />
-      {/* Private Key Display Modal */}
-      <PrivateKeyModal
-        isOpen={isPrivateKeyModalOpen}
-        onClose={() => setIsPrivateKeyModalOpen(false)}
-        privateKey={privateKey}
-      />
       {/* Role Selection Modal */}
       <RoleSelectionModal
         isOpen={isRoleSelectionOpen}
