@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # <div align="center">🌾 PlatformAgriblock 🔗</div>
 
 <div align="center">
