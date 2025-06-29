@@ -2,10 +2,7 @@
 # <div align="center">🌾 PlatformAgriblock 🔗</div>
 
 <div align="center">
-  
-  ![Status](https://img.shields.io/badge/status-active-success.svg)
-  [![GitHub Issues](https://img.shields.io/github/issues/nurcahyapriantoro/PlatformAgriblock.svg)](https://github.com/nurcahyapriantoro/PlatformAgriblock/issues)
-  [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/nurcahyapriantoro/PlatformAgriblock.svg)](https://github.com/nurcahyapriantoro/PlatformAgriblock/pulls)
+
   [![License](https://img.shields.io/badge/license-MIT-blue.svg)](/LICENSE)
   
 </div>
@@ -246,5 +243,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=100&section=footer" width="100%"/>
 </p> 
 =======
-# PlatformAgriblock
->>>>>>> 48f19b0dac400f9046dd196afebc102f8cdb37df
