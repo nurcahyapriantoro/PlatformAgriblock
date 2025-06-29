@@ -11,7 +11,7 @@
 </div>
 
 <p align="center">
-  <img src="https://i.imgur.com/YT8Oejq.gif" alt="Agriblock Banner" width="720px"/>
+  <img src="[https://i.imgur.com/YT8Oejq.gif](https://github.com/nurcahyapriantoro/PlatformAgriblock/blob/main/agriblock.jpg)" alt="Agriblock Banner" width="720px"/>
 </p>
 
 <div align="center">
